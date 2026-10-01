@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Ujian Online</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      background-color: #0056b3;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #003d80;
+    }
+    .warning-box {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      border-left: 4px solid #ffeeba;
+    }
+    .hidden {
+      display: none;
+    }
+    .violation-badge {
+      background: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      float: right;
+    }
+    .question-item {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Halaman Login / Registrasi Peserta -->
+  <div id="login-page" class="card">
+    <h2>Mulai Ujian Online</h2>
+    <div class="warning-box">
+      <strong>PERHATIAN:</strong><br>
+      Dilarang keluar dari tab atau berpindah aplikasi selama ujian berlangsung!
+    </div>
+    <form id="quiz-form">
+      <div class="form-group">
+        <label for="nama">Nama Lengkap Siswa</label>
+        <input type="text" id="nama" placeholder="Masukkan nama..." required>
+      </div>
+      <div class="form-group">
+        <label for="kelas">Kelas</label>
+        <select id="kelas" required>
+          <option value="">-- Pilih Kelas --</option>
+          <option value="10 IPA 1">10 IPA 1</option>
+          <option value="10 IPA 2">10 IPA 2</option>
+          <option value="11 IPA 1">11 IPA 1</option>
+          <option value="12 IPA 1">12 IPA 1</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Mulai Ujian Sekarang</button>
+    </form>
+  </div>
+
+  <!-- Halaman Lembar Ujian -->
+  <div id="exam-page" class="card hidden">
+    <div>
+      <span class="violation-badge">Pelanggaran: <span id="violation-count">0</span>/3</span>
+      <h3 id="student-info" style="margin-top: 0;"></h3>
+    </div>
+    <hr>
+    
+    <div id="quiz-container">
+      <div class="question-item">
+        <p><strong>1. Apa fungsi dari tag HTML &lt;title&gt;?</strong></p>
+        <label><input type="radio" name="q1" value="A"> Menentukan judul dokumen di tab browser</label><br>
+        <label><input type="radio" name="q1" value="B"> Membuat judul besar di dalam isi web</label><br>
+        <label><input type="radio" name="q1" value="C"> Menambahkan gambar pada halaman web</label>
+      </div>
+
+      <div class="question-item">
+        <p><strong>2. Platform mana yang digunakan untuk hosting web statis gratis?</strong></p>
+        <label><input type="radio" name="q2" value="A"> Google Docs</label><br>
+        <label><input type="radio" name="q2" value="B"> GitHub Pages</label><br>
+        <label><input type="radio" name="q2" value="C"> Microsoft Excel</label>
+      </div>
+    </div>
+
+    <button id="btn-submit" class="btn" onclick="finishExam()">Selesai & Kirim Ujian</button>
+  </div>
+
+  <script>
+    let violationCount = 0;
+    const maxViolations = 3;
+    let isExamActive = false;
+
+    const loginPage = document.getElementById('login-page');
+    const examPage = document.getElementById('exam-page');
+    const quizForm = document.getElementById('quiz-form');
+    const studentInfo = document.getElementById('student-info');
+    const violationDisplay = document.getElementById('violation-count');
+
+    // Handle saat tombol "Mulai Ujian" diklik
+    quizForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nama = document.getElementById('nama').value;
+      const kelas = document.getElementById('kelas').value;
+
+      studentInfo.innerText = `${nama} (${kelas})`;
+      
+      loginPage.classList.add('hidden');
+      examPage.classList.remove('hidden');
+      
+      isExamActive = true;
+      alert("Ujian dimulai! Jangan berpindah tab atau meninggalkan halaman ini.");
+    });
+
+    // Deteksi saat pengguna berpindah tab atau meminimalkan browser
+    document.addEventListener("visibilitychange", function() {
+      if (isExamActive && document.hidden) {
+        violationCount++;
+        violationDisplay.innerText = violationCount;
+
+        if (violationCount >= maxViolations) {
+          alert(`Peringatan Tegas! Anda telah meninggalkan tab sebanyak ${violationCount} kali. Ujian dihentikan dan jawaban Anda akan otomatis dikirim!`);
+          finishExam();
+        } else {
+          alert(`PERINGATAN (${violationCount}/${maxViolations})!\nAnda terdeteksi meninggalkan tab ujian! Terlalu sering berpindah tab akan membuat ujian Anda terhenti otomatis.`);
+        }
+      }
+    });
+
+    // Deteksi saat pengguna mencoba menutup atau me-refresh halaman
+    window.addEventListener("beforeunload", function (e) {
+      if (isExamActive) {
+        e.preventDefault();
+        e.returnValue = "Jika Anda menyegarkan atau menutup halaman, progres ujian akan hilang.";
+      }
+    });
+
+    // Fungsi saat ujian selesai dikirim
+    function finishExam() {
+      isExamActive = false;
+      alert("Terima kasih, jawaban Anda berhasil dikirim!");
+      location.reload();
+    }
+  </script>
+</body>
+</html>
